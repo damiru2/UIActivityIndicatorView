@@ -9,18 +9,22 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    var activityIndicatorView = UIActivityIndicatorView(style: .large)
+  let progressView = UIProgressView(frame: CGRect(x: 0, y: 0, width: 300, height: 10))
+    let progress = Progress(totalUnitCount: 11)
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.addSubview(activityIndicatorView)
-        activityIndicatorView.center = view.center
+        view.addSubview(progressView)
+        progressView.center = view.center
+        progressView.progress = 0.1
+        progressView.progressTintColor = .red
+        progressView.trackTintColor = .green
         
-        activityIndicatorView.color = .green
-        activityIndicatorView.startAnimating()
-        activityIndicatorView.hidesWhenStopped = true
-        
+        progressView.observedProgress = progress
+        progress.cancellationHandler = {
+            print("progress was stopped")
+        }
         
         
     }
@@ -28,13 +32,21 @@ class ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 2) {
-            self.activityIndicatorView.stopAnimating()
-            
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 2) {
-                self.activityIndicatorView.startAnimating()
+        var count: Int64 = 0
+        Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { timer in
+            if self.progress.isCancelled {
+                timer.invalidate()
             }
+            
+            if self.progress.fractionCompleted == 1 {
+                self.progress.cancel()
+            }
+            
+            self.progress.completedUnitCount = count
+            count += 1
+            print(count)
         }
+        
     }
 
 
